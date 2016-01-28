@@ -3,7 +3,7 @@ import java.util.ArrayList;
 public class Main {
 	public static void main(String[] args) {
 
-		String[] colorsArray = {"Red", "Blue", "Green", "Orange", "Black", "Yellow", "Magenta", "Cyan" };
+		String[] colorsArray = {"Red", "Blue", "Green", "Orange", "Black", "Yellow", "Magenta", "Cyan"};
 		int[] code = {2, 4, 6, 3};
 
 		// Calculate all possibilities
@@ -14,52 +14,45 @@ public class Main {
 			set[i] = (char) (i + '0');
 		}
 		generateAllPossibilities(possibilities, set, code.length);
-		int[][] possibilitiesIntArray = convertArrayListToIntArrayOfIntArrays(possibilities);
+		ArrayList<Integer[]> possibilitiesIntArray = convertArrayListToIntArrayOfIntArrays(possibilities);
 
 		Boolean solved = false;
 
 		int[] guess = new int[code.length];
 
 		// Generate first guess
-		for (int i = 0; i < code.length; i++) { guess[i] = 0; }
+		for (int i = 0; i < code.length; i++) {
+			guess[i] = 0;
+		}
 		int numberOfGuesses = 0;
-
-
-
 
 
 		while (!solved) {
 			if (numberOfPositionsAndColorRight(code, guess) == code.length) {
 				solved = true;
 			}
-			System.out.println(numberOfColorsRightPositionsWrong(code, guess));
 
 			// First phase of code breaking, guess the same color and remove from the array the possibilities that
 			// can't be part of the correct guess
-			if (numberOfPositionsAndColorRight(code, guess) > 0) {
-				for (int i = 0; i < possibilitiesIntArray.length; i++) {
-					int numberOfCorrectFound = 0;
-					for (int j = 0; j < code.length; j++) {
-						if (guess[j] == code[i]) {
+			for (int i = 0; i < possibilitiesIntArray.size(); i++) {
+				int numberOfCorrectFound = 0;
+				for (int j = 0; j < code.length; j++) {
+						if (guess[j] == code[j]) {
 							numberOfCorrectFound++;
 						}
-					}
+				}
 
-					if (numberOfCorrectFound != numberOfPositionsAndColorRight(code, guess)) {
-
-					}
+				if (numberOfCorrectFound != numberOfPositionsAndColorRight(code, guess)) {
+					possibilitiesIntArray.remove(i);
 				}
 			}
 
-
-
+			for (int i = 0; i < guess.length; i++) {
+				guess[i] = guess[i] + 1;
+			}
 
 			numberOfGuesses++;
 		}
-
-
-
-
 
 
 		System.out.println("Game over!");
@@ -125,20 +118,19 @@ public class Main {
 		return numberCorrect;
 	}
 
-	public static int[][] convertArrayListToIntArrayOfIntArrays(ArrayList<String> possibilities) {
-		int[][] possibilitiesIntArray = new int[possibilities.size()][possibilities.get(0).length()];
-		int[] tmpArray; // Use any element in the array, they're all the same
+	public static ArrayList<Integer[]> convertArrayListToIntArrayOfIntArrays(ArrayList<String> possibilities) {
+		ArrayList<Integer[]> possibilitiesIntArray = new ArrayList<>();
+
+		Integer[] tmpArray; // Use any element in the array, they're all the same
 
 		for (int i = 0; i < possibilities.size(); i++) {
-			tmpArray = new int[possibilities.get(0).length()];
+			tmpArray = new Integer[possibilities.get(0).length()];
 			for (int j = 0; j < tmpArray.length; j++) {
 				String a = possibilities.get(i);
 				char c = a.charAt(j);
-				System.out.println("" + tmpArray.length + "   " + i + "   " + possibilities.size() + "   " + Integer
-						.parseInt(String.valueOf(c)));
 				tmpArray[j] = Integer.parseInt(String.valueOf(c));
 			}
-			possibilitiesIntArray[i] = tmpArray;
+			possibilitiesIntArray.add(tmpArray);
 		}
 
 		return possibilitiesIntArray;
