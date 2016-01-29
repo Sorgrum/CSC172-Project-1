@@ -1,140 +1,157 @@
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Main {
-	public static void main(String[] args) {
+    public static void main(String[] args) {
 
-		String[] colorsArray = {"Red", "Blue", "Green", "Orange", "Black", "Yellow", "Magenta", "Cyan"};
-		int[] code = {2, 4, 6, 3};
+        String[] colorsArray = {"Red", "Blue", "Green", "Orange", "Black", "Yellow", "Magenta", "Cyan"};
+        int[] code = {5, 7, 1, 1};
 
-		// Calculate all possibilities
-		ArrayList<String> possibilities = new ArrayList<>();
+        // Calculate all possibilities
+        ArrayList<String> possibilities = new ArrayList<>();
 
-		char[] set = new char[colorsArray.length];
-		for (int i = 0; i < colorsArray.length; i++) {
-			set[i] = (char) (i + '0');
-		}
-		generateAllPossibilities(possibilities, set, code.length);
-		ArrayList<Integer[]> possibilitiesIntArray = convertArrayListToIntArrayOfIntArrays(possibilities);
+        char[] set = new char[colorsArray.length];
+        for (int i = 0; i < colorsArray.length; i++) {
+            set[i] = (char) (i + '0');
+        }
+        generateAllPossibilities(possibilities, set, code.length);
+        ArrayList<int[]> possibilitiesIntArray = convertArrayListToIntArrayOfIntArrays(possibilities);
 
-		Boolean solved = false;
+        Boolean solved = false;
 
-		int[] guess = new int[code.length];
+        int[] guess = new int[code.length];
 
-		// Generate first guess
-		for (int i = 0; i < code.length; i++) {
-			guess[i] = 0;
-		}
-		int numberOfGuesses = 0;
-
-
-		while (!solved) {
-			if (numberOfPositionsAndColorRight(code, guess) == code.length) {
-				solved = true;
-			}
-
-			// First phase of code breaking, guess the same color and remove from the array the possibilities that
-			// can't be part of the correct guess
-			for (int i = 0; i < possibilitiesIntArray.size(); i++) {
-				int numberOfCorrectFound = 0;
-				for (int j = 0; j < code.length; j++) {
-						if (guess[j] == code[j]) {
-							numberOfCorrectFound++;
-						}
-				}
-
-				if (numberOfCorrectFound != numberOfPositionsAndColorRight(code, guess)) {
-					possibilitiesIntArray.remove(i);
-				}
-			}
-
-			for (int i = 0; i < guess.length; i++) {
-				guess[i] = guess[i] + 1;
-			}
-
-			numberOfGuesses++;
-		}
+        // Generate first guess
+        for (int i = 0; i < code.length; i++) {
+            guess[i] = -1;
+        }
+        int numberOfGuesses = 0;
 
 
-		System.out.println("Game over!");
-	}
+        while (!solved) {
+            if (numberOfPositionsAndColorRight(code, guess) == code.length) {
+                solved = true;
+            }
+            int numberOfColorsFoundInCurrentGuess = numberOfPositionsAndColorRight(code, guess);
+            int inspectionIndex = 0;
 
-	static void generateAllPossibilities(ArrayList possibilities, char set[], int k) {
-		int n = set.length;
-		generateAllPossibilitiesRecursive(possibilities, set, "", n, k);
-	}
+            // First phase of code breaking, guess the same color and remove from the array the possibilities that
+            // can't be part of the correct guess
+            for (int i = 0; i < possibilitiesIntArray.size(); i++) {
 
-	// The main recursive method to print all possible strings of length k
-	static void generateAllPossibilitiesRecursive(ArrayList possibilities, char set[], String prefix, int n, int k) {
+                int numberOfCorrectFound = 0;
 
-		// Base case: k is 0, print prefix
-		if (k == 0) {
-			possibilities.add(prefix);
-			return;
-		}
+                for (int j = 0; j < code.length; j++) {
+                    System.out.println("Guess: " + guess[0] + "     intarrayatelement: " + Arrays.toString(possibilitiesIntArray.get(inspectionIndex)));
+                    if (guess[0] == possibilitiesIntArray.get(inspectionIndex)[j]) {
+                        numberOfCorrectFound++;
+                    }
+                }
 
-		// One by one add all characters from set and recursively
-		// call for k equals to k-1
-		for (int i = 0; i < n; ++i) {
+                if (numberOfCorrectFound != numberOfColorsFoundInCurrentGuess) {
+                    possibilitiesIntArray.remove(inspectionIndex);
+                } else {
+                    if (inspectionIndex < possibilitiesIntArray.size()) {
+                        inspectionIndex++;
+                    }
+                }
 
-			// Next character of input added
-			String newPrefix = prefix + set[i];
+                if (numberOfColorsRightPositionsWrong(code, possibilitiesIntArray.get(0)) == code.length) {
 
-			// k is decreased, because we have added a new character
-			generateAllPossibilitiesRecursive(possibilities, set, newPrefix, n, k - 1);
-		}
-	}
+                }
+            }
 
-	public static int numberOfPositionsAndColorRight(int[] code, int[] guess) {
 
-		int numberCorrect = 0;
-		for (int i = 0; i < code.length; i++) {
-			if (code[i] == guess[i]) {
-				numberCorrect += 1;
-			}
-		}
+            for (int i = 0; i < guess.length; i++) {
+                if (guess[i] < colorsArray.length) {
+                    guess[i] = guess[i] + 1;
+                }
+            }
 
-		// I need to subtract by the other method to prevent double counts
-		return numberCorrect;
-	}
+            numberOfGuesses++;
+        }
 
-	// This includes colors with the correct position! Account for this when calculating (numberOfPositionsAndColorsRight - numberOfColorsRightPositionsWrong)
-	public static int numberOfColorsRightPositionsWrong(int[] code, int[] guess) {
 
-		int numberCorrect = 0;
-		Boolean foundForCurrentI;
-		for (int i = 0; i < code.length; i++) {
-			foundForCurrentI = false;
-			for (int j = 0; j < code.length; j++) {
-				if (!foundForCurrentI) {
-					if (i != j) {
-						if (code[i] == guess[j]) {
-							numberCorrect += 1;
-							foundForCurrentI = true;
-						}
-					}
-				}
-			}
-		}
-		return numberCorrect;
-	}
+        System.out.println("Game over!");
+    }
 
-	public static ArrayList<Integer[]> convertArrayListToIntArrayOfIntArrays(ArrayList<String> possibilities) {
-		ArrayList<Integer[]> possibilitiesIntArray = new ArrayList<>();
+    static void generateAllPossibilities(ArrayList possibilities, char set[], int k) {
+        int n = set.length;
+        generateAllPossibilitiesRecursive(possibilities, set, "", n, k);
+    }
 
-		Integer[] tmpArray; // Use any element in the array, they're all the same
+    // The main recursive method to print all possible strings of length k
+    static void generateAllPossibilitiesRecursive(ArrayList possibilities, char set[], String prefix, int n, int k) {
 
-		for (int i = 0; i < possibilities.size(); i++) {
-			tmpArray = new Integer[possibilities.get(0).length()];
-			for (int j = 0; j < tmpArray.length; j++) {
-				String a = possibilities.get(i);
-				char c = a.charAt(j);
-				tmpArray[j] = Integer.parseInt(String.valueOf(c));
-			}
-			possibilitiesIntArray.add(tmpArray);
-		}
+        // Base case: k is 0, print prefix
+        if (k == 0) {
+            possibilities.add(prefix);
+            return;
+        }
 
-		return possibilitiesIntArray;
-	}
+        // One by one add all characters from set and recursively
+        // call for k equals to k-1
+        for (int i = 0; i < n; ++i) {
+
+            // Next character of input added
+            String newPrefix = prefix + set[i];
+
+            // k is decreased, because we have added a new character
+            generateAllPossibilitiesRecursive(possibilities, set, newPrefix, n, k - 1);
+        }
+    }
+
+    public static int numberOfPositionsAndColorRight(int[] code, int[] guess) {
+
+        int numberCorrect = 0;
+        for (int i = 0; i < code.length; i++) {
+            if (code[i] == guess[i]) {
+                numberCorrect += 1;
+            }
+        }
+
+        // I need to subtract by the other method to prevent double counts
+        return numberCorrect;
+    }
+
+    // This includes colors with the correct position! Account for this when calculating (numberOfPositionsAndColorsRight - numberOfColorsRightPositionsWrong)
+    public static int numberOfColorsRightPositionsWrong(int[] code, int[] guess) {
+
+        int numberCorrect = 0;
+        Boolean foundForCurrentI;
+        for (int i = 0; i < code.length; i++) {
+            foundForCurrentI = false;
+            for (int j = 0; j < code.length; j++) {
+                if (!foundForCurrentI) {
+                    if (i != j) {
+                        if (code[i] == guess[j]) {
+                            numberCorrect += 1;
+                            foundForCurrentI = true;
+                        }
+                    }
+                }
+            }
+        }
+        return numberCorrect;
+    }
+
+    public static ArrayList<int[]> convertArrayListToIntArrayOfIntArrays(ArrayList<String> possibilities) {
+        ArrayList<int[]> possibilitiesIntArray = new ArrayList<>();
+
+        int[] tmpArray; // Use any element in the array, they're all the same
+
+        for (int i = 0; i < possibilities.size(); i++) {
+            tmpArray = new int[possibilities.get(0).length()];
+            for (int j = 0; j < tmpArray.length; j++) {
+                String a = possibilities.get(i);
+                char c = a.charAt(j);
+                tmpArray[j] = Integer.parseInt(String.valueOf(c));
+            }
+            possibilitiesIntArray.add(tmpArray);
+        }
+
+        return possibilitiesIntArray;
+    }
 
 }
 
