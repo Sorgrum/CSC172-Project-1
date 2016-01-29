@@ -1,11 +1,14 @@
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
 
+        Scanner input = new Scanner(System.in);
+
         String[] colorsArray = {"Red", "Blue", "Green", "Orange", "Black", "Yellow", "Magenta", "Cyan"};
-        int[] code = {5, 7, 1, 1};
+        int[] code = {3};
 
         // Calculate all possibilities
         ArrayList<String> possibilities = new ArrayList<>();
@@ -18,61 +21,98 @@ public class Main {
         ArrayList<int[]> possibilitiesIntArray = convertArrayListToIntArrayOfIntArrays(possibilities);
 
         Boolean solved = false;
+        Boolean foundPossibilities = false;
 
         int[] guess = new int[code.length];
 
         // Generate first guess
         for (int i = 0; i < code.length; i++) {
-            guess[i] = -1;
+            guess[i] = 0;
         }
         int numberOfGuesses = 0;
 
 
-        while (!solved) {
-            if (numberOfPositionsAndColorRight(code, guess) == code.length) {
-                solved = true;
-            }
-            int numberOfColorsFoundInCurrentGuess = numberOfPositionsAndColorRight(code, guess);
-            int inspectionIndex = 0;
+        while (!foundPossibilities) {
+            // For some reason, this needs to be run twice
+            for (int k = 0; k < colorsArray.length * 2; k++) {
 
-            // First phase of code breaking, guess the same color and remove from the array the possibilities that
-            // can't be part of the correct guess
-            for (int i = 0; i < possibilitiesIntArray.size(); i++) {
 
-                int numberOfCorrectFound = 0;
+                if (numberOfPositionsAndColorRight(code, guess) == code.length) {
+                    foundPossibilities = true;
+                    solved = true;
+                }
+                int numberOfColorsFoundInCurrentGuess = numberOfPositionsAndColorRight(code, guess);
+                int inspectionIndex = 0;
 
-                for (int j = 0; j < code.length; j++) {
-                    System.out.println("Guess: " + guess[0] + "     intarrayatelement: " + Arrays.toString(possibilitiesIntArray.get(inspectionIndex)));
-                    if (guess[0] == possibilitiesIntArray.get(inspectionIndex)[j]) {
-                        numberOfCorrectFound++;
+                // First phase of code breaking, guess the same color and remove from the array the possibilities that
+                // can't be part of the correct guess
+                for (int i = 0; i < possibilitiesIntArray.size(); i++) {
+
+                    int numberOfCorrectFound = 0;
+
+                    //if (numberOfColorsFoundInCurrentGuess > 0) {
+                    for (int j = 0; j < code.length; j++) {
+                        int currentValue = possibilitiesIntArray.get(inspectionIndex)[j];
+                        if (guess[0] == currentValue) {
+                            numberOfCorrectFound++;
+                        }
+                    }
+
+
+                    if (numberOfCorrectFound != numberOfColorsFoundInCurrentGuess) {
+                        possibilitiesIntArray.remove(inspectionIndex);
+                    } else {
+                        if (inspectionIndex < possibilitiesIntArray.size()) {
+                            inspectionIndex++;
+                        }
+                    }
+
+                }
+
+
+                for (int i = 0; i < guess.length; i++) {
+                    if (guess[i] < colorsArray.length) {
+                        guess[i] = guess[i] + 1;
+                    } else {
+                        guess[i] = 0;
                     }
                 }
 
-                if (numberOfCorrectFound != numberOfColorsFoundInCurrentGuess) {
-                    possibilitiesIntArray.remove(inspectionIndex);
-                } else {
-                    if (inspectionIndex < possibilitiesIntArray.size()) {
-                        inspectionIndex++;
-                    }
-                }
-
-                if (numberOfColorsRightPositionsWrong(code, possibilitiesIntArray.get(0)) == code.length) {
-
-                }
+                numberOfGuesses++;
             }
 
+            numberOfGuesses /= 2;
+            foundPossibilities = true;
 
-            for (int i = 0; i < guess.length; i++) {
-                if (guess[i] < colorsArray.length) {
-                    guess[i] = guess[i] + 1;
-                }
-            }
-
-            numberOfGuesses++;
         }
 
+        int index = 0;
 
+        int[] tmpGuess = new int[code.length];
+        for (int j = 0; j < code.length; j++) {
+            tmpGuess[j] = 0;
+        }
+        int printIndex = 0;
+        for (; printIndex < colorsArray.length; printIndex++) {
+
+            System.out.println("Guess " + printIndex + ": " + Arrays.toString(tmpGuess));
+            for (int j = 0; j < code.length; j++) {
+                tmpGuess[j] += 1;
+            }
+        }
+
+        while (!solved) {
+            if (numberOfPositionsAndColorRight(code, possibilitiesIntArray.get(index)) == code.length) {
+                solved = true;
+            }
+            System.out.println("Guess " + printIndex + ": " + Arrays.toString(possibilitiesIntArray.get(index)));
+            index++;
+            printIndex++;
+            numberOfGuesses += 1;
+        }
         System.out.println("Game over!");
+        System.out.println("Number of guesses: " + (numberOfGuesses - 1)); //number of guesses gets over counted by one because once the code is found, it still counts towards the number of guesses
+        System.out.println("");
     }
 
     static void generateAllPossibilities(ArrayList possibilities, char set[], int k) {
