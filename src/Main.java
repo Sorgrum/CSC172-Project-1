@@ -1,203 +1,235 @@
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
 
-        Scanner input = new Scanner(System.in);
+	    Scanner input = new Scanner(System.in);
+	    Boolean active = true;
+	    while (active) {
 
-        // Ask and parse colors
-        System.out.print("Enter the colors to be used in the game on one line: ");
-        String colorsString = input.nextLine();
-        String[] colorsArray = colorsString.split("\\s+");
-
-
-
-        int[] code = {3, 4 ,5};
-
-        // Calculate all possibilities
-        ArrayList<String> possibilities = new ArrayList<>();
-
-        char[] set = new char[colorsArray.length];
-        for (int i = 0; i < colorsArray.length; i++) {
-            set[i] = (char) (i + '0');
-        }
-        generateAllPossibilities(possibilities, set, code.length);
-        ArrayList<int[]> possibilitiesIntArray = convertArrayListToIntArrayOfIntArrays(possibilities);
-
-        Boolean solved = false;
-        Boolean foundPossibilities = false;
-
-        int[] guess = new int[code.length];
-
-        // Generate first guess
-        for (int i = 0; i < code.length; i++) {
-            guess[i] = 0;
-        }
-        int numberOfGuesses = 0;
+		    MasterMind masterMind = new MasterMind();
+		    String[] colorsArray = masterMind.getColors();
+		    int[] code = masterMind.getCode();
 
 
-        while (!foundPossibilities) {
-            // For some reason, this needs to be run twice
-            for (int k = 0; k < colorsArray.length * 2; k++) {
+		    // Calculate all possibilities
+		    ArrayList<String> possibilities = new ArrayList<>();
+
+		    // Convert colorsArray to an int array. Each int represents the position of the color in the color array
+		    char[] set = new char[colorsArray.length];
+		    for (int i = 0; i < colorsArray.length; i++) {
+			    set[i] = (char) (i + '0');
+		    }
+		    MasterMind.generateAllPossibilities(possibilities, set, code.length);
+		    ArrayList<int[]> possibilitiesIntArray = MasterMind.convertArrayListToIntArrayOfIntArrays(possibilities);
+		    // All possibilities calculated
+
+		    Boolean solved = false;
+		    Boolean solvedEarlyBoolean = false;
+		    Boolean foundPossibilities = false;
+		    int solvedEarly = 0;
+
+		    int[] guess = new int[code.length];
+
+		    // Generate first guess
+		    for (int i = 0; i < code.length; i++) {
+			    guess[i] = 0;
+		    }
+		    int numberOfGuesses = 0;
 
 
-                if (numberOfPositionsAndColorRight(code, guess) == code.length) {
-                    solved = true;
-                }
-                int numberOfColorsFoundInCurrentGuess = numberOfPositionsAndColorRight(code, guess);
-                int inspectionIndex = 0;
-
-                // First phase of code breaking, guess the same color and remove from the array the possibilities that
-                // can't be part of the correct guess
-                for (int i = 0; i < possibilitiesIntArray.size(); i++) {
-
-                    int numberOfCorrectFound = 0;
-
-                    //if (numberOfColorsFoundInCurrentGuess > 0) {
-                    for (int j = 0; j < code.length; j++) {
-                        int currentValue = possibilitiesIntArray.get(inspectionIndex)[j];
-                        if (guess[0] == currentValue) {
-                            numberOfCorrectFound++;
-                        }
-                    }
+		    while (!foundPossibilities) {
+			    // For some reason, this needs to be run twice
+			    for (int k = 0; k < colorsArray.length * 2; k++) {
 
 
-                    if (numberOfCorrectFound != numberOfColorsFoundInCurrentGuess) {
-                        possibilitiesIntArray.remove(inspectionIndex);
-                    } else {
-                        if (inspectionIndex < possibilitiesIntArray.size()) {
-                            inspectionIndex++;
-                        }
-                    }
+				    if (MasterMind.numberOfPositionsAndColorRight(code, guess) == code.length) {
+					    solved = true;
+					    solvedEarlyBoolean = true;
+					    solvedEarly = guess[0];
+				    }
+				    int numberOfColorsFoundInCurrentGuess = MasterMind.numberOfPositionsAndColorRight(code, guess);
+				    int inspectionIndex = 0;
 
-                }
+				    // First phase of code breaking, guess the same color and remove from the array the possibilities that
+				    // can't be part of the correct guess
+				    for (int i = 0; i < possibilitiesIntArray.size(); i++) {
+
+					    int numberOfCorrectFound = 0;
+
+					    //if (numberOfColorsFoundInCurrentGuess > 0) {
+					    for (int j = 0; j < code.length; j++) {
+						    int currentValue = possibilitiesIntArray.get(inspectionIndex)[j];
+						    if (guess[0] == currentValue) {
+							    numberOfCorrectFound++;
+						    }
+					    }
 
 
-                for (int i = 0; i < guess.length; i++) {
-                    if (guess[i] < colorsArray.length) {
-                        guess[i] = guess[i] + 1;
-                    } else {
-                        guess[i] = 0;
-                    }
-                }
+					    if (numberOfCorrectFound != numberOfColorsFoundInCurrentGuess) {
+						    possibilitiesIntArray.remove(inspectionIndex);
+					    } else {
+						    if (inspectionIndex < possibilitiesIntArray.size()) {
+							    inspectionIndex++;
+						    }
+					    }
 
-                numberOfGuesses++;
-            }
+				    }
 
-            numberOfGuesses /= 2;
-            foundPossibilities = true;
 
-        }
+				    for (int i = 0; i < guess.length; i++) {
+					    if (guess[i] < colorsArray.length) {
+						    guess[i] = guess[i] + 1;
+					    } else {
+						    guess[i] = 0;
+					    }
+				    }
 
-        int index = 0;
+				    numberOfGuesses++;
+			    }
 
-        int[] tmpGuess = new int[code.length];
-        for (int j = 0; j < code.length; j++) {
-            tmpGuess[j] = 0;
-        }
-        int printIndex = 0;
-        for (; printIndex < colorsArray.length; printIndex++) {
+			    numberOfGuesses /= 2;
+			    foundPossibilities = true;
 
-            System.out.println("Guess " + printIndex + ": " + Arrays.toString(tmpGuess));
-            for (int j = 0; j < code.length; j++) {
-                tmpGuess[j] += 1;
-            }
-        }
+		    }
 
-        while (!solved) {
-            if (numberOfPositionsAndColorRight(code, possibilitiesIntArray.get(index)) == code.length) {
-                solved = true;
-            }
-            System.out.println("Guess " + printIndex + ": " + Arrays.toString(possibilitiesIntArray.get(index)));
-            index++;
-            printIndex++;
-            numberOfGuesses += 1;
-        }
-        System.out.println("Game over!");
-        System.out.println("Number of guesses: " + (numberOfGuesses - 1)); //number of guesses gets over counted by one because once the code is found, it still counts towards the number of guesses
-        System.out.println("");
+		    // Print the guesses
+		    int index = 0;
+		    int printIndex = 0;
+		    String result = "";
+
+		    if (solvedEarlyBoolean) {
+			    int[] tmpGuess = new int[code.length];
+			    for (int j = 0; j < code.length; j++) {
+				    tmpGuess[j] = 0;
+			    }
+			    for (; printIndex <= solvedEarly; printIndex++) {
+
+				    // Result for this guess
+				    for (int i = 0; i < MasterMind.numberOfPositionsAndColorRight(code, tmpGuess); i++) {
+					    result = result + " •";
+				    }
+
+				    // Create the response string (Either filled or empty circles)
+				    String stringGuess = "[";
+				    for (int i = 0; i < code.length; i++) {
+					    // Do this for not the last element
+					    if (i != code.length - 1) {
+						    stringGuess += colorsArray[tmpGuess[i]] + ", ";
+					    } else {
+						    stringGuess += colorsArray[tmpGuess[i]];
+					    }
+				    }
+				    stringGuess += "]";
+				    // Print out the guess
+				    System.out.println("Guess " + (printIndex + 1) + ": " + stringGuess + "    " +
+						    "Response: " + result);
+
+				    // Set up the next guess output
+				    for (int j = 0; j < code.length; j++) {
+					    tmpGuess[j] += 1;
+				    }
+			    }
+		    } else {
+			    int[] tmpGuess = new int[code.length];
+			    for (int j = 0; j < code.length; j++) {
+				    tmpGuess[j] = 0;
+			    }
+			    for (; printIndex < colorsArray.length; printIndex++) {
+
+				    result = "";
+
+				    // Result for this guess
+				    for (int i = 0; i < MasterMind.numberOfPositionsAndColorRight(code, tmpGuess); i++) {
+					    result = result + " •";
+				    }
+
+				    // Create the response string (Either filled or empty circles)
+				    String stringGuess = "[";
+				    for (int i = 0; i < code.length; i++) {
+					    // Do this for not the last element
+					    if (i != code.length - 1) {
+						    stringGuess += colorsArray[tmpGuess[i]] + ", ";
+					    } else {
+						    stringGuess += colorsArray[tmpGuess[i]];
+					    }
+				    }
+				    stringGuess += "]";
+
+				    System.out.println("Guess " + (printIndex + 1) + ": " + stringGuess + "    " +
+						    "Response: " + result);
+
+				    // Set up the next guess
+				    for (int j = 0; j < code.length; j++) {
+					    tmpGuess[j] += 1;
+				    }
+			    }
+		    }
+
+		    while (!solved) {
+
+			    // Create the response string (Either filled or empty circles)
+			    String stringGuess = "[";
+			    for (int i = 0; i < code.length; i++) {
+				    // Do this for not the last element
+				    if (i != code.length - 1) {
+					    stringGuess += colorsArray[possibilitiesIntArray.get(index)[i]] + ", ";
+				    } else {
+					    stringGuess += colorsArray[possibilitiesIntArray.get(index)[i]];
+				    }
+			    }
+			    stringGuess += "]";
+
+			    // Create the response string (Either filled or empty circles)
+			    result = "";
+			    int accountedNumberOfWhites = MasterMind.numberOfColorsRightPositionsWrong(code, possibilitiesIntArray
+					    .get(index)) - MasterMind.numberOfPositionsAndColorRight(code, possibilitiesIntArray.get
+					    (index));
+
+			    if (accountedNumberOfWhites < 0) {
+				    accountedNumberOfWhites = 0;
+			    }
+
+			    // Result for this guess
+			    for (int i = 0; i < MasterMind.numberOfPositionsAndColorRight(code, possibilitiesIntArray.get(index)); i++) {
+				    result = result + " •";
+			    }
+			    // Result for this guess
+			    for (int i = 0; i < accountedNumberOfWhites; i++) {
+				    result = result + " ◦";
+			    }
+			    if (MasterMind.numberOfPositionsAndColorRight(code, possibilitiesIntArray.get(index)) == code.length) {
+				    solved = true;
+			    }
+
+			    System.out.println("Guess " + (printIndex + 1) + ": " + stringGuess + "    " +
+					    "Response: " + result);
+			    index++;
+			    printIndex++;
+			    numberOfGuesses += 1;
+		    }
+		    // End printing guesses
+
+		    numberOfGuesses -= 1; // Account for the 1 that is added when the code is found
+		    if (solvedEarlyBoolean) {
+			    numberOfGuesses = solvedEarly;
+			    numberOfGuesses += 1;
+		    }
+		    System.out.println("Game over!");
+		    System.out.println("Number of guesses: " + numberOfGuesses); //number of guesses gets over counted by one because once the
+		    // code is found, it still counts towards the number of guesses
+		    System.out.println("");
+		    System.out.println("Play again?");
+		    String replayResponse = input.nextLine();
+
+		    if (!replayResponse.toLowerCase().startsWith("y")) {
+			    active = false;
+		    }
+
+	    }
+	    System.out.println("Thanks for playing!");
     }
-
-    static void generateAllPossibilities(ArrayList possibilities, char set[], int k) {
-        int n = set.length;
-        generateAllPossibilitiesRecursive(possibilities, set, "", n, k);
-    }
-
-    // The main recursive method to print all possible strings of length k
-    static void generateAllPossibilitiesRecursive(ArrayList possibilities, char set[], String prefix, int n, int k) {
-
-        // Base case: k is 0, print prefix
-        if (k == 0) {
-            possibilities.add(prefix);
-            return;
-        }
-
-        // One by one add all characters from set and recursively
-        // call for k equals to k-1
-        for (int i = 0; i < n; ++i) {
-
-            // Next character of input added
-            String newPrefix = prefix + set[i];
-
-            // k is decreased, because we have added a new character
-            generateAllPossibilitiesRecursive(possibilities, set, newPrefix, n, k - 1);
-        }
-    }
-
-    public static int numberOfPositionsAndColorRight(int[] code, int[] guess) {
-
-        int numberCorrect = 0;
-        for (int i = 0; i < code.length; i++) {
-            if (code[i] == guess[i]) {
-                numberCorrect += 1;
-            }
-        }
-
-        // I need to subtract by the other method to prevent double counts
-        return numberCorrect;
-    }
-
-    // This includes colors with the correct position! Account for this when calculating (numberOfPositionsAndColorsRight - numberOfColorsRightPositionsWrong)
-    public static int numberOfColorsRightPositionsWrong(int[] code, int[] guess) {
-
-        int numberCorrect = 0;
-        Boolean foundForCurrentI;
-        for (int i = 0; i < code.length; i++) {
-            foundForCurrentI = false;
-            for (int j = 0; j < code.length; j++) {
-                if (!foundForCurrentI) {
-                    if (i != j) {
-                        if (code[i] == guess[j]) {
-                            numberCorrect += 1;
-                            foundForCurrentI = true;
-                        }
-                    }
-                }
-            }
-        }
-        return numberCorrect;
-    }
-
-    public static ArrayList<int[]> convertArrayListToIntArrayOfIntArrays(ArrayList<String> possibilities) {
-        ArrayList<int[]> possibilitiesIntArray = new ArrayList<>();
-
-        int[] tmpArray; // Use any element in the array, they're all the same
-
-        for (int i = 0; i < possibilities.size(); i++) {
-            tmpArray = new int[possibilities.get(0).length()];
-            for (int j = 0; j < tmpArray.length; j++) {
-                String a = possibilities.get(i);
-                char c = a.charAt(j);
-                tmpArray[j] = Integer.parseInt(String.valueOf(c));
-            }
-            possibilitiesIntArray.add(tmpArray);
-        }
-
-        return possibilitiesIntArray;
-    }
-
 }
 
 
