@@ -7,8 +7,14 @@ public class Main {
 
         Scanner input = new Scanner(System.in);
 
-        String[] colorsArray = {"Red", "Blue", "Green", "Orange", "Black", "Yellow", "Magenta", "Cyan"};
-        int[] code = {3};
+        // Ask and parse colors
+        System.out.print("Enter the colors to be used in the game on one line: ");
+        String colorsString = input.nextLine();
+        String[] colorsArray = colorsString.split("\\s+");
+
+
+
+        int[] code = {3, 4 ,5};
 
         // Calculate all possibilities
         ArrayList<String> possibilities = new ArrayList<>();
@@ -38,7 +44,6 @@ public class Main {
 
 
                 if (numberOfPositionsAndColorRight(code, guess) == code.length) {
-                    foundPossibilities = true;
                     solved = true;
                 }
                 int numberOfColorsFoundInCurrentGuess = numberOfPositionsAndColorRight(code, guess);
@@ -210,10 +215,7 @@ public class Main {
         int numberOfAttempts = 1;
 
 
-        // Ask and parse colors
-        System.out.print("Enter the colors to be used in the game on one line: ");
-        String colorsString = input.nextLine();
-        String[] colorsArray = colorsString.split("\\s+");
+
         ArrayList<String> colors = new ArrayList<>();
 
         for (String element : colorsArray) {
